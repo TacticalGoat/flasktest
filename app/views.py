@@ -3,6 +3,7 @@ from flask import render_template,redirect,url_for,flash,request,jsonify
 from flask_login import login_required,current_user,login_user,logout_user
 from .models import User,Post
 from .forms import LoginForm,RegisterForm,PostForm
+from .exceptions import InvalidUsage
 
 
 @lm.user_loader
@@ -38,7 +39,7 @@ def signup():
 @login_required
 def index(user):
     if user != current_user.username:
-        return redirect(url_for('index',user=current_user.username))
+        raise InvalidUsage(message='Unauthorized Access',status_code=411)
     user_obj = User.query.filter_by(username=user).first()
     posts = user_obj.posts.all()
     form = PostForm()
@@ -47,7 +48,6 @@ def index(user):
         post = Post(title=form.title.data,body=form.body.data,author=current_user._get_current_object())
         db.session.add(post)
         db.session.commit()
-        print "!!!!!POSTED!!!!!"
         flash('post added')
         return redirect(url_for('.index',user=current_user.username))
     return render_template('index.html',user=user,posts=posts,form=form)
@@ -57,9 +57,16 @@ def getuser(user):
     u = User.query.filter_by(username=user).first()
     if u is not None:
         return jsonify(username=u.username,id=u.id)
-    return jsonify(None)
+    raise InvalidUsage(message='User does\'nt exist',status_code=404)
 
 @app.route('/logout')
 def logout():
     logout_user()
     return redirect(url_for('login'))
+
+@app.errorhandler(InvalidUsage)
+def handle_invalid_usage(error):
+    response = jsonify(error.to_dict())
+    response.status_code = error.status_code
+    app.logger.error('{0} ERROR:{1}'.format(error.status_code,error.message))
+    return response
