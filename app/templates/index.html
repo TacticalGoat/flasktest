@@ -1,0 +1,30 @@
+<H1>Hello {{user}}</H1>
+<br>
+<a href="{{url_for('logout')}}">logout</a>
+<P>
+  {%for post in posts%}
+  <h3>{{post.title}}:</h3>
+  <br>
+  {{post.body}}
+  <br>
+  {%endfor%}
+</P>
+<form action="" method="post" name="submitpost">
+  {{form.hidden_tag()}}
+  <P>
+    <h3>Submit new post</h3>
+    <br>
+    {{form.title(size=80)}}
+    <br>
+    {{form.body(size=80)}}
+    <br>
+    <p><input type="submit" value="Sign In"></p>
+  </P>
+</form>
+
+<P>
+  {%for message in get_flashed_messages()%}
+  <br>
+  <h3 style="color:red">{{message}}</h3>
+  {%endfor%}
+</p>

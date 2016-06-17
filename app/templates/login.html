@@ -1,0 +1,20 @@
+<form action="" method="post" name="login">
+  {{form.hidden_tag()}}
+  <P>
+    please enter your username:<br>
+    {{form.username(size=80)}}<br>
+    please enter your password<br>
+    {{form.password(size=80)}}<br>
+  </P>
+  <p><input type="submit" value="Sign In"></p>
+</form>
+<P>
+  <h3>Not a member?</h3><br>
+  <a href="{{url_for('signup')}}">Signup</a>
+</P>
+<P>
+  {%for message in get_flashed_messages()%}
+  <br>
+  <h3 style="color:red">{{message}}</h3>
+  {%endfor%}
+</p>
