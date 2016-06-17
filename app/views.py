@@ -1,5 +1,5 @@
 from app import lm,db,app
-from flask import render_template,redirect,url_for,flash,request
+from flask import render_template,redirect,url_for,flash,request,jsonify
 from flask_login import login_required,current_user,login_user,logout_user
 from .models import User,Post
 from .forms import LoginForm,RegisterForm,PostForm
@@ -51,6 +51,13 @@ def index(user):
         flash('post added')
         return redirect(url_for('.index',user=current_user.username))
     return render_template('index.html',user=user,posts=posts,form=form)
+
+@app.route('/get/<user>',methods=['GET','POST'])
+def getuser(user):
+    u = User.query.filter_by(username=user).first()
+    if u is not None:
+        return jsonify(username=u.username,id=u.id)
+    return jsonify(None)
 
 @app.route('/logout')
 def logout():
