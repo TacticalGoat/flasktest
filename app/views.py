@@ -5,6 +5,8 @@ from .models import User,Post
 from .forms import LoginForm,RegisterForm,PostForm
 from .exceptions import InvalidUsage
 
+import datetime
+
 
 @lm.user_loader
 def load_user(id):
@@ -68,5 +70,5 @@ def logout():
 def handle_invalid_usage(error):
     response = jsonify(error.to_dict())
     response.status_code = error.status_code
-    app.logger.error('{0} ERROR:{1}'.format(error.status_code,error.message))
+    app.logger.error('{0} ERROR:{1},{2}'.format(error.status_code,error.message,datetime.utcnow()))
     return response
