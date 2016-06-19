@@ -23,7 +23,11 @@ def login():
             return redirect(url_for('index',user=user.username))
         else:
             flash('Invalid Login')
-    return render_template('login.html',form=form)
+    try:
+        return render_template('login.html',form=form)
+    except Exception as e:
+        app.logger.error('Exception:{0},{1}'.format(str(e),time.asctime(time.localtime(time.time()))))
+        return render_template('500.html')
 
 
 @app.route('/signup',methods=['GET','POST'])
@@ -35,7 +39,11 @@ def signup():
         db.session.commit()
         flash('Successful Registrations')
         return redirect(request.args.get('next'),url_for('login'))
-    return render_template('signup.html',form=form)
+    try:
+        return render_template('signup.html',form=form)
+    except Exception as e:
+        app.logger.error('Exception:{0},{1}'.format(str(e),time.asctime(time.localtime(time.time()))))
+        return render_template('500.html')
 
 @app.route('/<user>/index',methods=['GET','POST'])
 @login_required
@@ -52,23 +60,41 @@ def index(user):
         db.session.commit()
         flash('post added')
         return redirect(url_for('.index',user=current_user.username))
-    return render_template('index.html',user=user,posts=posts,form=form)
+    try:
+        return render_template('index.html',user=user,posts=posts,form=form)
+    except Exception as e:
+        app.logger.error('Exception:{0},{1}'.format(str(e),time.asctime(time.localtime(time.time()))))
+        return render_template('500.html')
+
 
 @app.route('/get/<user>',methods=['GET','POST'])
 def getuser(user):
-    u = User.query.filter_by(username=user).first()
-    if u is not None:
-        return jsonify(username=u.username,id=u.id)
-    raise InvalidUsage(message='User does\'nt exist',status_code=404)
+    try:
+        u = User.query.filter_by(username=user).first()
+        if u is not None:
+            return jsonify(username=u.username,id=u.id)
+        raise InvalidUsage(message='User does\'nt exist',status_code=404)
+    except InvalidUsage as e:
+        try:
+            return render_template('404.html')
+        except Exception as e:
+            app.logger.error('Exception:{0},{1}'.format(str(e),time.asctime(time.localtime(time.time()))))
+            return render_template('500.html')
+
+
 
 @app.route('/logout')
 def logout():
     logout_user()
-    return redirect(url_for('login'))
+    try:
+        return redirect(url_for('login'))
+    except Exception as e:
+        app.logger.error('Exception:{0},{1}'.format(str(e),time.asctime(time.localtime(time.time()))))
+        return render_template('500.html')
 
 @app.errorhandler(InvalidUsage)
 def handle_invalid_usage(error):
     response = jsonify(error.to_dict())
     response.status_code = error.status_code
     app.logger.error('{0} ERROR:{1},{2}'.format(error.status_code,error.message,time.asctime(time.localtime(time.time()))))
-    return response
+    return render_template('404.html')
